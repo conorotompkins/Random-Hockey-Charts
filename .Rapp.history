@@ -1,0 +1,13 @@
+library(readr)#
+library(dplyr)#
+library(ggplot2)#
+library(lubridate)#
+library(tidyr)#
+#
+data <- read_csv("Corsica_Skater.Stats_11h47.csv") %>%#
+        filter(Team == "PIT") %>%#
+        arrange(Date) %>%#
+        mutate(iG60 = (G * TOI) / 60,#
+               game_number = dense_rank(Date)) %>%#
+        select(Player, Date, game_number, ixG60, iG60) %>%#
+        gather(., metric, measure, -Player, -Date, -game_number)
