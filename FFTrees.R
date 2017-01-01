@@ -25,8 +25,8 @@ test <- df %>%
                   OSh.per = mean(OSh.per, na.rm = TRUE),
                   OSv.per = mean(OSv.per, na.rm = TRUE),
                   FO.per = mean(FO.per, na.rm = TRUE),
-                  PN = mean(PN, na.rm = TRUE),
-                  PN. = mean(PN., na.rm = TRUE)) %>%
+                  PN = sum(PN, na.rm = TRUE),
+                  PN. = sum(PN., na.rm = TRUE)) %>%
         ungroup()
 
 test$playoff[is.na(test$playoff)] <- FALSE
@@ -36,4 +36,4 @@ ffplayoff<- test %>%
         ntbt(FFTrees, playoff ~ .)
 
 plot(ffplayoff, 
-     main = "20152016 NHL Playoffs", decision.names = c("Is Not Playoff Team", "Is a Playoff Team"))
+     main = "20152016 NHL Playoffs (5v5)", decision.names = c("Is Not Playoff Team", "Is a Playoff Team"))
