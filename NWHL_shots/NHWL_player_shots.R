@@ -50,7 +50,19 @@ df <- my_data %>%
   summarize(SOG = sum(SOG)) %>%
   arrange(team, -SOG) %>%
   mutate(team_percent = round(SOG / sum(SOG), 2),
-         position = cumsum(SOG) - (.5 * SOG)) 
+         position = cumsum(SOG) - (.5 * SOG))
+
+colors <- data.frame(team = unique(df$team),
+                     fill = c("#23b14d",
+                              "#fdb927",
+                              "#6bb1e1",
+                              "#111f47"),
+                     color = c("#0564a8",
+                               "#2f2f2f",
+                               "#231f20",
+                               "#231f20"))
+
+
 
 ggplot(df, aes(team, SOG, fill = team)) +
   geom_col(aes(alpha = team_percent), color = "black") +
