@@ -52,6 +52,8 @@ df <- my_data %>%
   mutate(team_percent = round(SOG / sum(SOG), 2),
          position = cumsum(SOG) - (.5 * SOG))
 
+
+unique(df$team)
 colors <- data.frame(team = unique(df$team),
                      fill = c("#23b14d",
                               "#fdb927",
@@ -60,25 +62,53 @@ colors <- data.frame(team = unique(df$team),
                      color = c("#0564a8",
                                "#2f2f2f",
                                "#231f20",
-                               "#231f20"))
+                               "#c32036"))
+colors <- colors %>%
+  mutate(team = as.character(team),
+         fill = as.character(fill),
+         color = as.character(color))
+
+
+df <- df %>%
+  left_join(colors) %>%
+  ungroup %>%
+  mutate(team = factor(team, levels = team_helper$team))
 
 
 
-ggplot(df, aes(team, SOG, fill = team)) +
-  geom_col(aes(alpha = team_percent), color = "black") +
+ggplot(df, aes(team, SOG)) +
+  geom_col(aes(alpha = (team_percent + .5), 
+               fill = team),
+           color = "black") +
   geom_text(data = df, aes(team, position, 
                                   label=ifelse(team_percent >= 0.05, paste0(name, ": ", sprintf("%.0f", team_percent*100),"%"),"")), size = 4) +
-  scale_fill_viridis(discrete = TRUE) +
   labs(x = "Team",
        y = "Shots On Goal",
        title = "NWHL Shots",
        caption = "Players with less than %5 of their team's shots not annotated \n @Null_HHockey") +
   guides(fill = FALSE,
          alpha = FALSE) +
+  scale_fill_viridis(discrete = TRUE) +
+  #scale_color_manual(values = rev(c("#0564a8",
+  #                              "#2f2f2f",
+  #                              "#231f20",
+  #                              "#c32036"))) +
+  #scale_fill_manual(values =  rev(c("#23b14d",
+  #                              "#fdb927",
+   #                             "#6bb1e1",
+    #                            "#111f47")))
+  #scale_color_manual(values = colors$color, 
+                     #labels = colors$team) +
+  #scale_fill_manual(values = colors$fill, 
+                     #labels = colors$team) +
+  #scale_color_discrete(values = colors$color) +
+  #scale_fill_discrete(values = colors$fill) +
   scale_x_discrete(expand = c(0, .5)) +
   scale_y_continuous(expand = c(0, 0), limits = c(0, 350)) +
   theme(panel.grid = element_blank(),
         plot.caption = element_text(hjust = 1))
+
+ggsave("NWHL Shots Bar Plot.png", width = 16, height = 9)
   
 
 category1_helper <- my_data_df %>%
