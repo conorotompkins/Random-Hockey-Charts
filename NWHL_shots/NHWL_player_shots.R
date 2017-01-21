@@ -58,11 +58,15 @@ colors <- data.frame(team = unique(df$team),
                      fill = c("#23b14d",
                               "#fdb927",
                               "#6bb1e1",
-                              "#111f47"),
+                              "#c32036"),
                      color = c("#0564a8",
                                "#2f2f2f",
                                "#231f20",
-                               "#c32036"))
+                               "#c32036"),
+                     full_team_name = c("Conneticut Whale",
+                                        "Boston Pride",
+                                        "Buffalo Beauts",
+                                        "New York Riveters"))
 colors <- colors %>%
   mutate(team = as.character(team),
          fill = as.character(fill),
@@ -72,31 +76,35 @@ colors <- colors %>%
 df <- df %>%
   left_join(colors) %>%
   ungroup %>%
-  mutate(team = factor(team, levels = team_helper$team))
+  mutate(team = factor(team, levels = team_helper$team),
+         fill = factor(fill, levels = colors$fill),
+         color = factor(color, levels = colors$color),
+         full_team_name = factor(full_team_name, levels = colors$full_team_name))
 
 
 
-ggplot(df, aes(team, SOG)) +
-  geom_col(aes(alpha = (team_percent + .5), 
-               fill = team),
+ggplot(df, aes(full_team_name, SOG)) +
+  geom_col(aes(alpha = (team_percent * 3), 
+               fill = full_team_name),
            color = "black") +
-  geom_text(data = df, aes(team, position, 
+  geom_text(data = df, aes(full_team_name, position, 
                                   label=ifelse(team_percent >= 0.05, paste0(name, ": ", sprintf("%.0f", team_percent*100),"%"),"")), size = 4) +
-  labs(x = "Team",
+  labs(x = NULL,
        y = "Shots On Goal",
        title = "NWHL Shots",
        caption = "Players with less than %5 of their team's shots not annotated \n @Null_HHockey") +
   guides(fill = FALSE,
-         alpha = FALSE) +
-  scale_fill_viridis(discrete = TRUE) +
-  #scale_color_manual(values = rev(c("#0564a8",
-  #                              "#2f2f2f",
-  #                              "#231f20",
-  #                              "#c32036"))) +
-  #scale_fill_manual(values =  rev(c("#23b14d",
-  #                              "#fdb927",
-   #                             "#6bb1e1",
-    #                            "#111f47")))
+         alpha = FALSE,
+         color = FALSE) +
+  #scale_fill_viridis(discrete = TRUE) +
+  #scale_color_manual(values = c("Conneticut Whale" = "#0564a8",
+  #                              "Boston Pride" = "#2f2f2f",
+  #                              "Buffalo Beauts" = "#231f20",
+  #                              "New York Riveters" = "#111f47")) +
+  scale_fill_manual(values =  c("Conneticut Whale" = "#23b14d",
+                                "Boston Pride" = "#fdb927",
+                                "Buffalo Beauts" = "#6bb1e1",
+                                "New York Riveters"  = "#c32036")) +
   #scale_color_manual(values = colors$color, 
                      #labels = colors$team) +
   #scale_fill_manual(values = colors$fill, 
@@ -108,4 +116,4 @@ ggplot(df, aes(team, SOG)) +
   theme(panel.grid = element_blank(),
         plot.caption = element_text(hjust = 1))
 
-ggsave("NWHL Shots Bar Plot.png", width = 16, height = 9)
+ggsave("NWHL Shots Bar Plot team colors.png", width = 16, height = 9)
