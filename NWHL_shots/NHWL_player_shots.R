@@ -65,8 +65,8 @@ colors <- data.frame(team = unique(df$team),
                                "#c32036"),
                      full_team_name = c("Conneticut Whale",
                                         "Boston Pride",
-                                        "Buffalo Beauts",
-                                        "New York Riveters"))
+                                        "New York Riveters",
+                                        "Buffalo Beauts"))
 colors <- colors %>%
   mutate(team = as.character(team),
          fill = as.character(fill),
@@ -91,7 +91,8 @@ ggplot(df, aes(full_team_name, SOG)) +
                                   label=ifelse(team_percent >= 0.05, paste0(name, ": ", sprintf("%.0f", team_percent*100),"%"),"")), size = 4) +
   labs(x = NULL,
        y = "Shots On Goal",
-       title = "NWHL Shots",
+       title = "NWHL Player Shots",
+       subtitle = "As of 2/1/2017",
        caption = "Players with less than %5 of their team's shots not annotated \n @Null_HHockey") +
   guides(fill = FALSE,
          alpha = FALSE,
@@ -112,7 +113,7 @@ ggplot(df, aes(full_team_name, SOG)) +
   #scale_color_discrete(values = colors$color) +
   #scale_fill_discrete(values = colors$fill) +
   scale_x_discrete(expand = c(0, .5)) +
-  scale_y_continuous(expand = c(0, 0), limits = c(0, 350)) +
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 400)) +
   theme(panel.grid = element_blank(),
         plot.caption = element_text(hjust = 1))
 
