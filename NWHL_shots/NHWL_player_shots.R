@@ -7,26 +7,31 @@ source("https://raw.githubusercontent.com/conorotompkins/AdjGSAA/master/graphs/t
 theme_set(theme_nhh())
 
 #http://www.nwhl.zone/stats/league_instance/46941?order_by=hksgm&order_dir=desc&stat_tab=ice_hockey_skater&subseason=327125
+#copy each page of the stats leaderboard and run the corresponding line of code below
 
 page_1 <- read.delim("clipboard")
 page_2 <- read.delim("clipboard")
 page_3 <- read.delim("clipboard")
+
+#bind the pages together
 my_files <- list(page_1 = page_1,
                  page_2 = page_2,
                  page_3 = page_3)
 
 
+#clean up column anmes and select the columns we need
 my_data <- bind_rows(my_files) %>%
   rename(name = `NAME`,
          team = `TEAM`) %>%
   select(team, name, SOG)
 
+#save data
 write_csv(my_data, "NWHL_shots_data.csv")
 
 my_data <- read_csv("NWHL_shots_data.csv")
 
 
-
+#create helper data for sorting the teams
 team_helper <- my_data %>%
   group_by(team) %>%
   summarize(SOG = sum(SOG)) %>%
@@ -35,6 +40,7 @@ team_helper <- my_data %>%
   select(team) %>%
   unique()
 
+#create helper data for sorting the players
 name_helper <- my_data %>%
   group_by(team, name) %>%
   summarize(SOG = sum(SOG)) %>%
@@ -42,7 +48,8 @@ name_helper <- my_data %>%
   ungroup() %>%
   select(name) %>%
   unique()
-  
+
+#create df for the graph  
 df <- my_data %>%
   mutate(team = factor(team, levels = team_helper$team),
          name = factor(name, levels = name_helper$name)) %>%
@@ -53,7 +60,7 @@ df <- my_data %>%
          position = cumsum(SOG) - (.5 * SOG))
 
 
-unique(df$team)
+#create df for colors and full team names
 colors <- data.frame(team = unique(df$team),
                      fill = c("#23b14d",
                               "#fdb927",
@@ -72,7 +79,7 @@ colors <- colors %>%
          fill = as.character(fill),
          color = as.character(color))
 
-
+#join them together
 df <- df %>%
   left_join(colors) %>%
   ungroup %>%
@@ -82,7 +89,7 @@ df <- df %>%
          full_team_name = factor(full_team_name, levels = colors$full_team_name))
 
 
-
+#create graph
 ggplot(df, aes(full_team_name, SOG)) +
   geom_col(aes(alpha = (team_percent * 3), 
                fill = full_team_name),
