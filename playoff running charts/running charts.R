@@ -26,13 +26,23 @@ df_player <- df_raw %>%
   ungroup()
 
 
-df_player %>% 
+plot_player <- df_player %>% 
   #filter(team == "PIT") %>% 
-    ggplot(aes(game_number, toi_cum, group = player, color = position)) +
+    ggplot(aes(game_number, toi_cum, group = player, color = position, size = toi_sum, alpha = toi_sum)) +
+      geom_vline(xintercept = c(1:7), alpha = .25) +
       geom_line() +
-      facet_wrap(~team)
+      facet_wrap(~team) +
+  scale_color_discrete(guide_colorbar(title = "Player Position")) +
+      scale_size_continuous(range = c(.25, 1.25), guide = "none") +
+      scale_alpha_continuous(range = c(.25, 1), guide = "none") +
+      labs(title = "Cumulative Time on Ice Per Player",
+       subtitle = "2016-17 NHL Playoffs, All Situations",
+       x = "Game Number",
+       y = "Cumulative Time on Ice",
+       caption = "@Null_HHockey, data from http://www.corsica.hockey/") +
+      theme(panel.grid.minor = element_blank())
       #scale_color_viridis(discrete = TRUE)
-
+plot_player
 
 df_pos <- df_raw %>% 
   mutate(position = if_else(position == "L" | position == "C" | position ==  "R",
@@ -41,22 +51,22 @@ df_pos <- df_raw %>%
   group_by(team) %>% 
   mutate(game_number = dense_rank(date)) %>% 
   ungroup() %>% 
-  select(team, game_number, position, player, toi) %>% 
-  group_by(player, team) %>% 
-  mutate(toi_cum = cumsum(toi)) %>% 
-  ungroup()
+  select(team, game_number, position, toi) %>% 
+  group_by(team, game_number, position) %>% 
+  summarize(toi_sd = sd(toi))
 
-df_pos %>% 
+plot_position <- df_pos %>% 
   #filter(team == "PIT") %>% 
-  ggplot(aes(game_number, toi_cum, group = position, color = position)) +
-  geom_jitter(width = .1, alpha = .5) +
-  geom_smooth() +
+  ggplot(aes(game_number, toi_sd, color = position)) +
+  geom_vline(xintercept = c(1:7), alpha = .25) +
+  geom_line(size = 2) +
   facet_wrap(~team) +
-  labs(title = "Cumulative Time On Ice",
+  labs(title = "Roster Time On Ice Allocation Consistency",
        subtitle = "2016-17 NHL Playoffs, All Situations",
        x = "Game Number",
-       y = "Cumulative Time On Ice") +
-  scale_x_continuous(breaks = c(1:7))
-#scale_color_viridis(discrete = TRUE)
-warnings()
-?geom_jitter
+       y = "Standard Deviation of Time on Ice",
+       caption = "A higher standard deviation indicates greater variance in time on ice @Null_HHockey, data from http://www.corsica.hockey/") +
+  theme(panel.grid.minor = element_blank(),
+        plot.caption = element_text(hjust = 0))
+plot_position
+?theme
