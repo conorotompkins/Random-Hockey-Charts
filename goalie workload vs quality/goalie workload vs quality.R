@@ -1,9 +1,14 @@
 library(tidyverse)
 library(viridis)
+library(lubridate)
 
-setwd("~/github folder/Random-Hockey-Charts")
+setwd("/github folder/Random-Hockey-Charts")
 
 theme_set(theme_bw())
+
+individual_5v5 <- read_csv("individual goalie playoffs 5v5.csv")
+individual_5v5$sit <- "5v5"
+colnames(individual_5v5) <- tolower(colnames(individual_5v5))
 
 df_5v5 <- read_csv("1617 goalie playoffs 5v5.csv")
 df_5v5$sit <- "5v5"
@@ -35,14 +40,27 @@ df_5v5 <- df_5v5 %>%
          xga60 = xga/toi * 60) %>%
   filter(toi > 60)
 
-matchups = data.frame(series = c("WSH vs. TOR",
+individual_5v5 <- individual_5v5 %>% 
+  select(team, date, player, toi, ca60, xga60) %>% 
+  group_by(team, player) %>% 
+  summarize(xga60 = mean(xga60),
+            ca60 = mean(ca60),
+            toi = sum(toi)) %>% 
+  filter(toi > 40)
+
+matchups = data.frame(round = c(rep.int(1, 8), rep.int(2, 4)),
+                      series = c("WSH vs. TOR",
                                  "PIT vs. CBJ",
                                  "NYR vs. MTL",
                                  "BOS vs. OTT",
                                  "SJS vs. EDM",
                                  "CHI vs. NSH",
                                  "MIN vs. STL",
-                                 "ANA vs. CGY"),
+                                 "ANA vs. CGY",
+                                 "NSH vs. STL",
+                                 "ANA vs. EDM",
+                                 "NYR vs. OTT",
+                                 "WSH vs. PIT"),
                       team1 = c("WSH",
                                 "PIT",
                                 "NYR",
@@ -50,7 +68,11 @@ matchups = data.frame(series = c("WSH vs. TOR",
                                 "S.J",
                                 "CHI",
                                 "MIN",
-                                "ANA"),
+                                "ANA",
+                                "NSH",
+                                "ANA",
+                                "NYR",
+                                "WSH"),
                       team2 = c("TOR",
                                 "CBJ",
                                 "MTL",
@@ -58,11 +80,23 @@ matchups = data.frame(series = c("WSH vs. TOR",
                                 "EDM",
                                 "NSH",
                                 "STL",
-                                "CGY"))
+                                "CGY",
+                                "STL",
+                                "EDM",
+                                "OTT",
+                                "PIT"))
+dates <- data_frame(round = c(rep(1, 12), rep(2, 18)),
+                    date = seq(ymd("2017-04-12"), ymd("2017-05-11"), by = "days"))
+
+individual_5v5 <- individual_5v5 %>% 
+  left_join(dates) %>% 
+  left_join(matchups)
 
 matchups <- matchups %>% 
-  mutate_all(as.character) %>% 
-  gather(order, team, -series)
+  mutate_at(vars(series, team1, team2), as.character) %>% 
+  gather(order, team, -(c(round, series))) %>% 
+  arrange(round, series)
+
 
 df_5v5 <- df_5v5 %>% 
   left_join(matchups)
@@ -76,6 +110,7 @@ df_shorthanded <- df_shorthanded %>%
 
 ggplot(df_5v5, aes(xga60, ca60, label = player, fill = series)) +
   geom_label(size = 3) +
+  facet_wrap(~round) +
   labs(x = "Expected Goals Against Per Hour",
        y = "Shots Against Per Hour (Corsi)",
        title = "Goalie Workload vs. Shot Quality Against",
@@ -92,4 +127,7 @@ ggplot(df_shorthanded, aes(xga60, ca60, label = player, fill = series)) +
        caption = "@Null_HHockey, Data from Corsi.ca") +
   guides(fill = guide_legend(title = "Series"))
 
-?scale_fill_viridis
+
+
+ggplot(individual_5v5, aes(xga60, ca60, label = player)) +
+  geom_label(size = 3)
