@@ -1,5 +1,3 @@
-install.packages("viridis")
-
 library(tidyverse)
 library(viridis)
 
@@ -7,9 +5,18 @@ setwd("C:/Users/conor/githubfolder/Random-Hockey-Charts/playoff running charts")
 
 theme_set(theme_bw())
 
-df_raw <- read_csv("16_17 playoffs running charts 4_28.csv")
+df_raw <- read_csv("16_17 playoffs running charts 5_6.csv")
 
 colnames(df_raw) <- tolower(colnames(df_raw))
+
+schedule <- df_raw %>% 
+  select(team, date) %>% 
+  group_by(team, date) %>%
+  unique() %>% 
+  arrange(team, date) %>% 
+  group_by(team) %>% 
+  mutate(game_number = dense_rank(date))
+
 
 teams <- df_raw %>%
   group_by(team) %>% 
@@ -20,12 +27,14 @@ teams <- df_raw %>%
   unlist()
 
 
-df_player <- df_raw %>% 
-  mutate(team = factor(team, levels = teams)) %>% 
+df_player <- df_raw %>%
+  right_join(schedule, by = c("date", "team")) %>% 
   arrange(team, player, date) %>% 
   group_by(team) %>% 
   mutate(game_number = dense_rank(date)) %>% 
   ungroup() %>% 
+
+  replace_na(list(toi = 0)) %>% 
   group_by(player, team) %>% 
   mutate(toi_cum = cumsum(toi),
          position = if_else(position == "L" | position == "C" | position ==  "R",
@@ -37,14 +46,15 @@ df_player <- df_raw %>%
   group_by(team) %>% 
   mutate(toi_team_sum = sum(toi)) %>% 
   ungroup() %>% 
-  mutate(toi_pct_team = round(toi_sum / toi_team_sum, digits = 3))
+  mutate(toi_pct_team = round(toi_sum / toi_team_sum, digits = 3),
+         team = factor(team, levels = teams))
 
 
 plot_player_league <- df_player %>% 
   ggplot(aes(game_number, toi_cum, color = position, group = player)) +
-  geom_vline(xintercept = c(1:7), alpha = .25) +
-  geom_line()
-
+  geom_vline(xintercept = c(1:max(df_player$game_number)), alpha = .25) +
+  geom_line() +
+  facet_wrap(~position, ncol = 1)
 plot_player_league
 
 plot_karlsson <- df_player %>% 
@@ -57,7 +67,7 @@ plot_karlsson
 plot_player <- df_player %>% 
   #filter(team == "PIT") %>% 
     ggplot(aes(game_number, toi_cum, group = player, color = position, size = toi_pct_team, alpha = toi_pct_team)) +
-      geom_vline(xintercept = c(1:7), alpha = .25) +
+  geom_vline(xintercept = c(1:max(df_player$game_number)), alpha = .25) +
       geom_line() +
       facet_wrap(~team) +
   scale_color_discrete(guide_colorbar(title = "Player Position")) +
@@ -87,7 +97,7 @@ df_pos <- df_raw %>%
 plot_position <- df_pos %>% 
   #filter(team == "PIT") %>% 
   ggplot(aes(game_number, toi_sd, color = position)) +
-  geom_vline(xintercept = c(1:7), alpha = .25) +
+  geom_vline(xintercept = c(1:max(df_pos$game_number)), alpha = .25) +
   geom_line(size = 2) +
   facet_wrap(~team) +
   labs(title = "Roster Time On Ice Allocation Consistency",
