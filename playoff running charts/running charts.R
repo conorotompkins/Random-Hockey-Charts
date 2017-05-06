@@ -47,6 +47,12 @@ plot_player_league <- df_player %>%
 
 plot_player_league
 
+plot_karlsson <- df_player %>% 
+  mutate(is_karlsson = player == "ERIK.KARLSSON") %>% 
+  ggplot(aes(game_number, toi_cum, color = position, group = player, alpha = is_karlsson)) +
+  geom_vline(xintercept = c(1:7), alpha = .25) +
+  geom_line()
+plot_karlsson
   
 plot_player <- df_player %>% 
   #filter(team == "PIT") %>% 
