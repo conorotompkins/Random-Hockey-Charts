@@ -5,7 +5,7 @@ setwd("C:/Users/conor/githubfolder/Random-Hockey-Charts/playoff running charts/"
 
 theme_set(theme_bw())
 
-df_raw <- read_csv("playoff running charts/16_17 playoffs running charts 5_7.csv")
+df_raw <- read_csv("16_17 playoffs running charts 5_7.csv")
 
 colnames(df_raw) <- tolower(colnames(df_raw))
 
@@ -55,14 +55,32 @@ line_plot_position <- df_pos %>%
         plot.caption = element_text(hjust = 0))
 line_plot_position
 
+
+
+teams_boxplot <- df_raw %>%
+  group_by(team, date) %>% 
+  summarize(team_toi_sd = sd(toi)) %>% 
+  group_by(team) %>% 
+  summarize(team_toi_sd = mean(team_toi_sd)) %>% 
+  arrange(team_toi_sd) %>% 
+  select(team) %>% 
+  unique() %>% 
+  unlist()
+
 boxplot_position <- df_raw %>%
-  mutate(team = factor(team, levels = teams),
+  mutate(team = factor(team, levels = teams_boxplot),
          position = if_else(position == "L" | position == "C" | position ==  "R",
-                            "F", "D"))
+                            "F", "D")) %>% 
+  group_by(team, position, date) %>% 
+  summarize(toi_sd = sd(toi))
   
 team_position_boxplot <- boxplot_position %>% 
-  ggplot(aes(team, toi, fill = position)) +
-  geom_boxplot()
+  ggplot(aes(team, toi_sd, fill = position)) +
+  geom_jitter(aes(color = position), 
+              alpha = .2,
+              width = .2) +
+  geom_boxplot(alpha = .3) +
+  facet_wrap(~position)
 team_position_boxplot
 
 team_position <- df_raw %>% 
@@ -96,10 +114,11 @@ team_scatter_position <- team_position %>%
          sep = "_TOI_SD_") %>% 
   ggplot(aes(position_TOI_SD_D, position_TOI_SD_F, label = team)) +
   geom_label() +
-  annotate(geom = "text",
-           x = 6,
-           y = 4.4,
-           label = "Higher --> More Variance") +
+  geom_smooth() +
+  #annotate(geom = "text",
+  #         x = 6,
+  #         y = 4.4,
+  #         label = "Higher --> More Variance") +
   labs(x = "Standard Deviation of Defense TOI",
        y = "Standard Deviation of Forwards TOI",
        title = "Distribution of Forward and Defense Lines",
