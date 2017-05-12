@@ -5,7 +5,7 @@ setwd("C:/Users/conor/githubfolder/Random-Hockey-Charts/playoff running charts")
 
 theme_set(theme_bw())
 
-df_raw <- read_csv("16_17 playoffs running charts 5_6.csv")
+df_raw <- read_csv("16_17 playoffs running charts 5_12.csv")
 
 colnames(df_raw) <- tolower(colnames(df_raw))
 
@@ -82,8 +82,29 @@ plot_player <- df_player %>%
       #scale_color_viridis(discrete = TRUE)
 plot_player
 
+
+
+teams_pos <- df_raw %>%
+  arrange(team, position, date) %>% 
+  group_by(team) %>% 
+  mutate(game_number = dense_rank(date),
+         team_toi_sd = sd(toi),
+         gp = max(game_number)) %>% 
+  arrange(desc(gp), team_toi_sd) %>% 
+  select(team) %>% 
+  unique() %>% 
+  unlist()
+str(teams)
+teams_pos
+
+league_sd <- df_raw %>% 
+  mutate(position = if_else(position == "L" | position == "C" | position ==  "R",
+                            "F", "D")) %>% 
+  group_by(position) %>% 
+  summarize(league_toi_sd = sd(toi))
+
 df_pos <- df_raw %>% 
-  mutate(team = factor(team, levels = teams),
+  mutate(team = factor(team, levels = teams_pos),
          position = if_else(position == "L" | position == "C" | position ==  "R",
                             "F", "D")) %>% 
   arrange(team, position, date) %>% 
@@ -92,11 +113,16 @@ df_pos <- df_raw %>%
   ungroup() %>% 
   select(team, game_number, position, toi) %>% 
   group_by(team, game_number, position) %>% 
-  summarize(toi_sd = sd(toi))
+  summarize(toi_sd = sd(toi)) %>% 
+  left_join(league_sd, by = c("position"))
+
+
+  
 
 plot_position <- df_pos %>% 
   #filter(team == "PIT") %>% 
   ggplot(aes(game_number, toi_sd, color = position)) +
+  geom_hline(aes(color = position, yintercept = league_toi_sd)) +
   geom_vline(xintercept = c(1:max(df_pos$game_number)), alpha = .25) +
   geom_line(size = 2) +
   facet_wrap(~team) +
@@ -108,4 +134,4 @@ plot_position <- df_pos %>%
   theme(panel.grid.minor = element_blank(),
         plot.caption = element_text(hjust = 0))
 plot_position
-?theme
+?geom_hline
