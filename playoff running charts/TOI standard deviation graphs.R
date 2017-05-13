@@ -1,6 +1,8 @@
 library(tidyverse)
 library(viridis)
 library(lubridate)
+library(viridis)
+
 
 setwd("~/github folder/Random-Hockey-Charts/playoff running charts")
 
@@ -204,22 +206,24 @@ team_pos_date_df <- df_raw %>%
   mutate(game_number_series = dense_rank(date)) %>% 
   ungroup()
 
-selected_series <-  "ANA vs. EDM" 
+selected_series <-  "PIT vs. CBJ" 
 team_pos_date_df %>% 
   filter(series == selected_series) %>% 
   ggplot(aes(game_number_series, toi, color = position, group = date)) +
-  geom_point() +
-  geom_boxplot(outlier.color = NULL,
-               alpha = .5) +
+  geom_jitter(width = .1,
+              alpha = .7) +
+  geom_violin(alpha = .3,
+              draw_quantiles = TRUE) +
   facet_wrap(team~position) +
-  scale_x_continuous(breaks = c(1:7)) +
+  scale_x_continuous(breaks = c(1:7)) + 
+  #scale_color_viridis(discrete = TRUE) +
+  #scale_fill_viridis(discrete = TRUE) +
   labs(title = selected_series,
        subtitle = "2016-17 NHL Playoffs, All Situations Play",
        x = "Game Number",
        y = "Time On Ice") +
   theme(panel.grid.minor = element_blank())
-
-?geom_boxplot
+?geom_violin
 
 c(1:team_pos_date_df %>% 
     filter(series == selected_series) %>% 
