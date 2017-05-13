@@ -144,4 +144,21 @@ team_scatter_position <- team_position %>%
 team_scatter_position
 
 team_pos_date_df <- df_raw %>% 
-  group_by(team, )
+  select(team, date, position, player, toi) %>% 
+mutate(position = if_else(position == "L" | position == "C" | position ==  "R",
+                          "F", "D")) %>% 
+  arrange(team, position, date) %>% 
+  group_by(team) %>% 
+  mutate(game_number = dense_rank(date)) %>% 
+  ungroup()
+  
+team_pos_date_df %>% 
+  filter(team == "PIT") %>% 
+  ggplot(aes(game_number, toi, color = position, group = game_number)) +
+  geom_point() +
+  geom_boxplot(outlier.color = NULL) +
+  facet_wrap(~position) +
+  scale_x_continuous(breaks = c(1:max(team_pos_date_df %>% 
+                                        filter(team == "PIT") %>% select(game_number))))
+
+?geom_boxplot
