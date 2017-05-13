@@ -212,8 +212,8 @@ team_pos_date_df %>%
   ggplot(aes(game_number_series, toi, color = position, group = date)) +
   geom_jitter(width = .1,
               alpha = .7) +
-  geom_violin(alpha = .3,
-              draw_quantiles = TRUE) +
+  geom_violin(alpha = .3) +
+  #look into draw_quantiles for the violins
   facet_wrap(team~position) +
   scale_x_continuous(breaks = c(1:7)) + 
   #scale_color_viridis(discrete = TRUE) +
@@ -223,8 +223,8 @@ team_pos_date_df %>%
        x = "Game Number",
        y = "Time On Ice") +
   theme(panel.grid.minor = element_blank())
-?geom_violin
 
+#trying to get scale_x_continuous to respond to the data
 c(1:team_pos_date_df %>% 
     filter(series == selected_series) %>% 
     max(game_number_series))
