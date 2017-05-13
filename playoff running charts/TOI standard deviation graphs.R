@@ -1,5 +1,6 @@
 library(tidyverse)
 library(viridis)
+library(lubridate)
 
 setwd("~/github folder/Random-Hockey-Charts/playoff running charts")
 
@@ -8,6 +9,52 @@ theme_set(theme_bw())
 df_raw <- read_csv("16_17 playoffs running charts 5_12.csv")
 
 colnames(df_raw) <- tolower(colnames(df_raw))
+
+matchups = data.frame(round = c(rep.int(1, 8), rep.int(2, 4)),
+                      series = c("WSH vs. TOR",
+                                 "PIT vs. CBJ",
+                                 "NYR vs. MTL",
+                                 "BOS vs. OTT",
+                                 "SJS vs. EDM",
+                                 "CHI vs. NSH",
+                                 "MIN vs. STL",
+                                 "ANA vs. CGY",
+                                 "NSH vs. STL",
+                                 "ANA vs. EDM",
+                                 "NYR vs. OTT",
+                                 "WSH vs. PIT"),
+                      team1 = c("WSH",
+                                "PIT",
+                                "NYR",
+                                "BOS",
+                                "S.J",
+                                "CHI",
+                                "MIN",
+                                "ANA",
+                                "NSH",
+                                "ANA",
+                                "NYR",
+                                "WSH"),
+                      team2 = c("TOR",
+                                "CBJ",
+                                "MTL",
+                                "OTT",
+                                "EDM",
+                                "NSH",
+                                "STL",
+                                "CGY",
+                                "STL",
+                                "EDM",
+                                "OTT",
+                                "PIT"))
+
+dates <- data_frame(round = c(rep(1, 12), rep(2, 18)),
+                    date = seq(ymd("2017-04-12"), ymd("2017-05-11"), by = "days"))
+
+matchups <- matchups %>% 
+  mutate_at(vars(series, team1, team2), as.character) %>% 
+  gather(order, team, -(c(round, series))) %>% 
+  arrange(round, series)
 
 teams <- df_raw %>%
   group_by(team) %>% 
@@ -31,7 +78,7 @@ teams_pos <- df_raw %>%
 
 league_sd <- df_raw %>% 
   mutate(position = if_else(position == "L" | position == "C" | position ==  "R",
-                            "F", "D")) %>% 
+                            "Forward", "Defense")) %>% 
   group_by(position) %>% 
   summarize(league_toi_sd = sd(toi))
 
@@ -87,7 +134,7 @@ teams_boxplot <- df_raw %>%
 boxplot_position <- df_raw %>%
   mutate(team = factor(team, levels = teams_boxplot),
          position = if_else(position == "L" | position == "C" | position ==  "R",
-                            "F", "D")) %>% 
+                            "Forward", "Defense")) %>% 
   group_by(team, position, date) %>% 
   summarize(toi_sd = sd(toi))
   
@@ -103,7 +150,7 @@ team_position_boxplot
 team_position <- df_raw %>% 
   mutate(team = factor(team, levels = teams),
          position = if_else(position == "L" | position == "C" | position ==  "R",
-                            "F", "D")) %>% 
+                            "Forward", "Defense")) %>% 
   arrange(team, position, date) %>% 
   select(team, position, toi) %>% 
   group_by(team, position) %>% 
@@ -145,20 +192,39 @@ team_scatter_position
 
 team_pos_date_df <- df_raw %>% 
   select(team, date, position, player, toi) %>% 
-mutate(position = if_else(position == "L" | position == "C" | position ==  "R",
-                          "F", "D")) %>% 
+  mutate(position = if_else(position == "L" | position == "C" | position ==  "R",
+                            "Forward", "Defense")) %>% 
   arrange(team, position, date) %>% 
   group_by(team) %>% 
   mutate(game_number = dense_rank(date)) %>% 
+  ungroup() %>% 
+  left_join(dates) %>% 
+  left_join(matchups) %>% 
+  group_by(series) %>% 
+  mutate(game_number_series = dense_rank(date)) %>% 
   ungroup()
-  
+
+selected_series <-  "ANA vs. EDM" 
 team_pos_date_df %>% 
-  filter(team == "PIT") %>% 
-  ggplot(aes(game_number, toi, color = position, group = game_number)) +
+  filter(series == selected_series) %>% 
+  ggplot(aes(game_number_series, toi, color = position, group = date)) +
   geom_point() +
-  geom_boxplot(outlier.color = NULL) +
-  facet_wrap(~position) +
-  scale_x_continuous(breaks = c(1:max(team_pos_date_df %>% 
-                                        filter(team == "PIT") %>% select(game_number))))
+  geom_boxplot(outlier.color = NULL,
+               alpha = .5) +
+  facet_wrap(team~position) +
+  scale_x_continuous(breaks = c(1:7)) +
+  labs(title = selected_series,
+       subtitle = "2016-17 NHL Playoffs, All Situations Play",
+       x = "Game Number",
+       y = "Time On Ice") +
+  theme(panel.grid.minor = element_blank())
 
 ?geom_boxplot
+
+c(1:team_pos_date_df %>% 
+    filter(series == selected_series) %>% 
+    max(game_number_series))
+  
+    summarize(games = max(game_number_series)) %>% 
+    select(games) %>% 
+    unlist())
