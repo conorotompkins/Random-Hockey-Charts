@@ -178,9 +178,9 @@ team_scatter_position <- team_position %>%
   spread(key = position,
          value = toi_sd,
          sep = "_TOI_SD_") %>% 
-  ggplot(aes(position_TOI_SD_D, position_TOI_SD_F, label = team)) +
+  ggplot(aes(position_TOI_SD_Defense, position_TOI_SD_Forward, label = team)) +
   geom_label() +
-  geom_smooth() +
+  #geom_smooth() +
   #annotate(geom = "text",
   #         x = 6,
   #         y = 4.4,
