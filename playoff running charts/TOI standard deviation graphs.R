@@ -8,7 +8,7 @@ setwd("~/github folder/Random-Hockey-Charts/playoff running charts")
 
 theme_set(theme_bw())
 
-df_raw <- read_csv("16_17 playoffs running charts 5_12.csv")
+df_raw <- read_csv("playoff running charts/16_17 playoffs running charts 5_15.csv")
 
 colnames(df_raw) <- tolower(colnames(df_raw))
 
@@ -50,8 +50,8 @@ matchups = data.frame(round = c(rep.int(1, 8), rep.int(2, 4)),
                                 "OTT",
                                 "PIT"))
 
-dates <- data_frame(round = c(rep(1, 12), rep(2, 18)),
-                    date = seq(ymd("2017-04-12"), ymd("2017-05-11"), by = "days"))
+dates <- data_frame(round = c(rep(1, 12), rep(2, 18), rep(3, 14)),
+                    date = seq(ymd("2017-04-12"), ymd("2017-05-25"), by = "days"))
 
 matchups <- matchups %>% 
   mutate_at(vars(series, team1, team2), as.character) %>% 
@@ -96,7 +96,7 @@ eliminated <- list(team = c("BOS",
 df_pos <- df_raw %>% 
   mutate(team = factor(team, levels = teams_pos),
          position = if_else(position == "L" | position == "C" | position ==  "R",
-                            "F", "D")) %>% 
+                            "Forward", "Defense")) %>% 
   arrange(team, position, date) %>% 
   group_by(team) %>% 
   mutate(game_number = dense_rank(date)) %>% 
@@ -112,6 +112,7 @@ line_plot_position <- df_pos %>%
   geom_hline(aes(color = position, yintercept = league_toi_sd)) +
   geom_vline(xintercept = c(1:max(df_pos$game_number)), alpha = .25) +
   geom_line(size = 2) +
+  scale_x_continuous(breaks = 1:max(df_pos$game_number)) +
   facet_wrap(~team) +
   labs(title = "Roster Time On Ice Allocation Consistency",
        subtitle = "2016-17 NHL Playoffs, All Situations",
@@ -149,29 +150,29 @@ team_position_boxplot <- boxplot_position %>%
   facet_wrap(~position)
 team_position_boxplot
 
-team_position <- df_raw %>% 
-  mutate(team = factor(team, levels = teams),
-         position = if_else(position == "L" | position == "C" | position ==  "R",
-                            "Forward", "Defense")) %>% 
-  arrange(team, position, date) %>% 
-  select(team, position, toi) %>% 
-  group_by(team, position) %>% 
-  summarize(toi_sd = sd(toi)) %>% 
-  ungroup() %>% 
-  mutate(eliminated = team %in% eliminated$team) %>% 
-  arrange(position, toi_sd) %>% 
-  mutate(order = row_number())
+#team_position <- df_raw %>% 
+#  mutate(team = factor(team, levels = teams),
+#         position = if_else(position == "L" | position == "C" | position ==  "R",
+#                            "Forward", "Defense")) %>% 
+#  arrange(team, position, date) %>% 
+#  select(team, position, toi) %>% 
+#  group_by(team, position) %>% 
+#  summarize(toi_sd = sd(toi)) %>% 
+#  ungroup() %>% 
+#  mutate(eliminated = team %in% eliminated$team) %>% 
+#  arrange(position, toi_sd) %>% 
+#  mutate(order = row_number())
   
-team_bar_position_plot <- team_position %>% 
-  ggplot(aes(order, toi_sd, fill = position)) +
-  geom_bar(stat = "identity", color = "black") +
-  scale_x_continuous(labels = team_position$team,
-                     breaks = team_position$order) +
-  facet_wrap(~position,
-             scales = "free") +
-  coord_flip()
-team_bar_position_plot
-?scale_x_discrete
+#team_bar_position_plot <- team_position %>% 
+#  ggplot(aes(order, toi_sd, fill = position)) +
+#  geom_bar(stat = "identity", color = "black") +
+#  scale_x_continuous(labels = team_position$team,
+#                     breaks = team_position$order) +
+#  facet_wrap(~position,
+#             scales = "free") +
+#  coord_flip()
+#team_bar_position_plot
+
 
 team_scatter_position <- team_position %>% 
   select(team, position, toi_sd) %>% 
@@ -180,11 +181,6 @@ team_scatter_position <- team_position %>%
          sep = "_TOI_SD_") %>% 
   ggplot(aes(position_TOI_SD_Defense, position_TOI_SD_Forward, label = team)) +
   geom_label() +
-  #geom_smooth() +
-  #annotate(geom = "text",
-  #         x = 6,
-  #         y = 4.4,
-  #         label = "Higher --> More Variance") +
   labs(x = "Standard Deviation of Defense TOI",
        y = "Standard Deviation of Forwards TOI",
        title = "Distribution of Forward and Defense Lines",
@@ -206,7 +202,8 @@ team_pos_date_df <- df_raw %>%
   mutate(game_number_series = dense_rank(date)) %>% 
   ungroup()
 
-selected_series <-  "PIT vs. CBJ" 
+
+selected_series <-  "ANA vs. EDM" 
 team_pos_date_df %>% 
   filter(series == selected_series) %>% 
   ggplot(aes(game_number_series, toi, color = position, group = date)) +
