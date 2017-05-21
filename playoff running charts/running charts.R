@@ -5,7 +5,7 @@ setwd("C:/Users/conor/githubfolder/Random-Hockey-Charts/playoff running charts")
 
 theme_set(theme_bw())
 
-df_raw <- read_csv("16_17 playoffs running charts 5_12.csv")
+df_raw <- read_csv("16_17 playoffs running charts 5_21.csv")
 
 colnames(df_raw) <- tolower(colnames(df_raw))
 
@@ -13,9 +13,7 @@ schedule <- df_raw %>%
   select(team, date) %>% 
   group_by(team, date) %>%
   unique() %>% 
-  arrange(team, date) %>% 
-  group_by(team) %>% 
-  mutate(game_number = dense_rank(date))
+  arrange(team, date)
 
 
 teams <- df_raw %>%
@@ -26,30 +24,35 @@ teams <- df_raw %>%
   unique() %>% 
   unlist()
 
+player_position <- df_raw %>% 
+  select(player, position) %>% 
+  unique()
+
 
 df_player <- df_raw %>%
+  select(team, player, date, toi) %>% 
+  group_by(team) %>% 
   right_join(schedule, by = c("date", "team")) %>% 
+  complete(date, player) %>% 
   arrange(team, player, date) %>% 
+  ungroup() %>% 
+  replace_na(list(toi = 0)) %>% 
+  left_join(player_position) %>% 
+  group_by(team, player) %>% 
+  mutate(toi_cum = cumsum(toi)) %>% 
+  ungroup() %>% 
   group_by(team) %>% 
   mutate(game_number = dense_rank(date)) %>% 
   ungroup() %>% 
-
-  replace_na(list(toi = 0)) %>% 
-  group_by(player, team) %>% 
-  mutate(toi_cum = cumsum(toi),
-         position = if_else(position == "L" | position == "C" | position ==  "R",
-                       "F", "D")) %>% 
-  select(team, player, game_number, position, toi, toi_cum) %>% 
-  group_by(player, team) %>% 
-  mutate(toi_sum = max(toi_cum)) %>% 
+  mutate(position = if_else(position == "L" | position == "C" | position ==  "R",
+                            "F", "D")) %>% 
+  group_by(team) %>%
+  mutate(gp_team = max(game_number)) %>% 
+  arrange(desc(gp_team), team, player, date) %>% 
   ungroup() %>% 
-  group_by(team) %>% 
-  mutate(toi_team_sum = sum(toi)) %>% 
-  ungroup() %>% 
-  mutate(toi_pct_team = round(toi_sum / toi_team_sum, digits = 3),
-         team = factor(team, levels = teams))
+  mutate(team = factor(team))
 
-
+  
 plot_player_league <- df_player %>% 
   ggplot(aes(game_number, toi_cum, color = position, group = player)) +
   geom_vline(xintercept = c(1:max(df_player$game_number)), alpha = .25) +
@@ -66,11 +69,11 @@ plot_karlsson
   
 plot_player <- df_player %>% 
   #filter(team == "PIT") %>% 
-    ggplot(aes(game_number, toi_cum, group = player, color = position, size = toi_pct_team, alpha = toi_pct_team)) +
-  geom_vline(xintercept = c(1:max(df_player$game_number)), alpha = .25) +
+    ggplot(aes(game_number, toi_cum, group = player, color = position)) +
+      geom_vline(xintercept = c(1:max(df_player$game_number)), alpha = .25) +
       geom_line() +
       facet_wrap(~team) +
-  scale_color_discrete(guide_colorbar(title = "Player Position")) +
+      scale_color_discrete(guide_colorbar(title = "Player Position")) +
       scale_size_continuous(range = c(.25, 1.25), guide = "none") +
       scale_alpha_continuous(range = c(.05, 1), guide = "none") +
       labs(title = "Cumulative Time on Ice Per Player",
@@ -81,57 +84,3 @@ plot_player <- df_player %>%
       theme(panel.grid.minor = element_blank())
       #scale_color_viridis(discrete = TRUE)
 plot_player
-
-
-
-teams_pos <- df_raw %>%
-  arrange(team, position, date) %>% 
-  group_by(team) %>% 
-  mutate(game_number = dense_rank(date),
-         team_toi_sd = sd(toi),
-         gp = max(game_number)) %>% 
-  arrange(desc(gp), team_toi_sd) %>% 
-  select(team) %>% 
-  unique() %>% 
-  unlist()
-str(teams)
-teams_pos
-
-league_sd <- df_raw %>% 
-  mutate(position = if_else(position == "L" | position == "C" | position ==  "R",
-                            "F", "D")) %>% 
-  group_by(position) %>% 
-  summarize(league_toi_sd = sd(toi))
-
-df_pos <- df_raw %>% 
-  mutate(team = factor(team, levels = teams_pos),
-         position = if_else(position == "L" | position == "C" | position ==  "R",
-                            "F", "D")) %>% 
-  arrange(team, position, date) %>% 
-  group_by(team) %>% 
-  mutate(game_number = dense_rank(date)) %>% 
-  ungroup() %>% 
-  select(team, game_number, position, toi) %>% 
-  group_by(team, game_number, position) %>% 
-  summarize(toi_sd = sd(toi)) %>% 
-  left_join(league_sd, by = c("position"))
-
-
-  
-
-plot_position <- df_pos %>% 
-  #filter(team == "PIT") %>% 
-  ggplot(aes(game_number, toi_sd, color = position)) +
-  geom_hline(aes(color = position, yintercept = league_toi_sd)) +
-  geom_vline(xintercept = c(1:max(df_pos$game_number)), alpha = .25) +
-  geom_line(size = 2) +
-  facet_wrap(~team) +
-  labs(title = "Roster Time On Ice Allocation Consistency",
-       subtitle = "2016-17 NHL Playoffs, All Situations",
-       x = "Game Number",
-       y = "Standard Deviation of Time on Ice",
-       caption = "A higher standard deviation indicates greater variance in time on ice @Null_HHockey, data from http://www.corsica.hockey/") +
-  theme(panel.grid.minor = element_blank(),
-        plot.caption = element_text(hjust = 0))
-plot_position
-?geom_hline
