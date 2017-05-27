@@ -5,7 +5,7 @@ setwd("C:/Users/conor/githubfolder/Random-Hockey-Charts/playoff running charts")
 
 theme_set(theme_bw())
 
-df_raw <- read_csv("16_17 playoffs running charts 5_21.csv")
+df_raw <- read_csv("16_17 playoffs running charts 5_27.csv")
 
 colnames(df_raw) <- tolower(colnames(df_raw))
 
@@ -29,6 +29,19 @@ player_position <- df_raw %>%
   unique()
 
 
+teams_gp <- df_raw %>% 
+  group_by(team) %>%
+  mutate(game_number = dense_rank(date),
+         gp_team = max(game_number)) %>% 
+  arrange(desc(gp_team), team) %>% 
+  ungroup() %>% 
+  mutate(team = factor(team)) %>% 
+  select(team, gp_team) %>% 
+  unique() %>% 
+  select(team) %>% 
+  unlist()
+
+
 df_player <- df_raw %>%
   select(team, player, date, toi) %>% 
   group_by(team) %>% 
@@ -45,12 +58,8 @@ df_player <- df_raw %>%
   mutate(game_number = dense_rank(date)) %>% 
   ungroup() %>% 
   mutate(position = if_else(position == "L" | position == "C" | position ==  "R",
-                            "F", "D")) %>% 
-  group_by(team) %>%
-  mutate(gp_team = max(game_number)) %>% 
-  arrange(desc(gp_team), team, player, date) %>% 
-  ungroup() %>% 
-  mutate(team = factor(team))
+                            "F", "D"),
+         team = factor(team, levels = teams_gp)) 
 
   
 plot_player_league <- df_player %>% 
