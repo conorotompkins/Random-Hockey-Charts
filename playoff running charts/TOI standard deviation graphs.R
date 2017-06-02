@@ -108,6 +108,9 @@ eliminated <- list(team = c("BOS",
                             "OTT",
                             "ANA"))
 
+last_date <- max(df_raw$date)
+my_subtitle <- paste("2016-17 NHL Playoffs, All Situations, Updated:", last_date)
+
 df_pos <- df_raw %>% 
   mutate(team = factor(team, levels = teams_pos)) %>% 
   arrange(team, position, date) %>% 
@@ -128,7 +131,7 @@ line_plot_position <- df_pos %>%
   scale_x_continuous(breaks = 1:max(df_pos$game_number)) +
   facet_wrap(~team) +
   labs(title = "Roster Time On Ice Allocation Consistency",
-       subtitle = "2016-17 NHL Playoffs, All Situations",
+       subtitle = my_subtitle,
        x = "Game Number",
        y = "Standard Deviation of Time on Ice",
        caption = "@Null_HHockey, data from http://www.corsica.hockey/") +
@@ -179,7 +182,7 @@ team_boxplot_F_plot <- boxplot_position_F %>%
   labs(x = NULL,
        y = "Standard Deviation of TOI per game",
        title = "Roster Time On Ice Allocation Consistency",
-       subtitle = "2016-17 NHL Playoffs, All Situations",
+       subtitle = my_subtitle,
        caption = "@Null_HHockey, data from http://www.corsica.hockey/")
 team_boxplot_F_plot
 
@@ -193,7 +196,7 @@ team_boxplot_D_plot <- boxplot_position_D %>%
   labs(x = NULL,
        y = "Standard Deviation of TOI per game",
        title = "Roster Time On Ice Allocation Consistency",
-       subtitle = "2016-17 NHL Playoffs, All Situations",
+       subtitle = my_subtitle,
        caption = "@Null_HHockey, data from http://www.corsica.hockey/")
 team_boxplot_D_plot
 
@@ -237,7 +240,7 @@ team_scatter_position <- team_position %>%
   labs(x = "Standard Deviation of Defense TOI",
        y = "Standard Deviation of Forwards TOI",
        title = "Distribution of Forward and Defense Lines",
-       subtitle = "2016-17 NHL Playoffs, All-Situations Play",
+       subtitle = my_subtitle,
        caption = "@Null_HHockey, data from Corsica.Hockey.CA")
 team_scatter_position
 
@@ -267,7 +270,7 @@ team_pos_date_df %>%
   #scale_color_viridis(discrete = TRUE) +
   #scale_fill_viridis(discrete = TRUE) +
   labs(title = selected_series,
-       subtitle = "2016-17 NHL Playoffs, All Situations Play",
+       subtitle = my_subtitle,
        x = "Game Number",
        y = "Time On Ice") +
   theme(panel.grid.minor = element_blank())
