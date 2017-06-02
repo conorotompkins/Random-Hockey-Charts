@@ -95,3 +95,4 @@ plot_player <- df_player %>%
       theme(panel.grid.minor = element_blank())
       #scale_color_viridis(discrete = TRUE)
 plot_player
+ggsave("line_plot_player.png")
