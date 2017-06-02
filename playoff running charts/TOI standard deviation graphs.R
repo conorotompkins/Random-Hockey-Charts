@@ -139,7 +139,7 @@ line_plot_position <- df_pos %>%
         panel.grid.major.x = element_blank(),
         plot.caption = element_text(hjust = 0))
 line_plot_position
-
+ggsave("line_plot_position_standard_deviation.png")
 
 
 teams_boxplot_F <- df_raw %>%
@@ -185,6 +185,7 @@ team_boxplot_F_plot <- boxplot_position_F %>%
        subtitle = my_subtitle,
        caption = "@Null_HHockey, data from http://www.corsica.hockey/")
 team_boxplot_F_plot
+ggsave("forward_team_boxplot.png")
 
 team_boxplot_D_plot <- boxplot_position_D %>% 
   ggplot(aes(team, toi_sd)) +
@@ -199,7 +200,7 @@ team_boxplot_D_plot <- boxplot_position_D %>%
        subtitle = my_subtitle,
        caption = "@Null_HHockey, data from http://www.corsica.hockey/")
 team_boxplot_D_plot
-
+ggsave("defense_team_boxplot.png")
 
 #team_position <- df_raw %>% 
 #  mutate(team = factor(team, levels = teams),
@@ -243,6 +244,7 @@ team_scatter_position <- team_position %>%
        subtitle = my_subtitle,
        caption = "@Null_HHockey, data from Corsica.Hockey.CA")
 team_scatter_position
+ggsave("team_scatter_position.png")
 
 team_pos_date_df <- df_raw %>% 
   select(team, date, position, player, toi) %>% 
@@ -274,6 +276,7 @@ team_pos_date_df %>%
        x = "Game Number",
        y = "Time On Ice") +
   theme(panel.grid.minor = element_blank())
+ggsave(paste0(selected_series, ".png"))
 
 #trying to get scale_x_continuous to respond to the data
 c(1:team_pos_date_df %>% 
