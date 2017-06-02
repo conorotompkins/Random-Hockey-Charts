@@ -61,6 +61,8 @@ df_player <- df_raw %>%
                             "F", "D"),
          team = factor(team, levels = teams_gp)) 
 
+last_date <- max(df_player$date)
+
   
 plot_player_league <- df_player %>% 
   ggplot(aes(game_number, toi_cum, color = position, group = player)) +
@@ -86,7 +88,7 @@ plot_player <- df_player %>%
       scale_size_continuous(range = c(.25, 1.25), guide = "none") +
       scale_alpha_continuous(range = c(.05, 1), guide = "none") +
       labs(title = "Cumulative Time on Ice Per Player",
-       subtitle = "2016-17 NHL Playoffs, All Situations",
+       subtitle = paste("2016-17 NHL Playoffs, All Situations, Updated:", last_date),
        x = "Game Number",
        y = "Cumulative Time on Ice",
        caption = "@Null_HHockey, data from http://www.corsica.hockey/") +
