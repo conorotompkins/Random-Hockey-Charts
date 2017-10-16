@@ -19,6 +19,18 @@ df <- data %>%
 
 df %>% 
   gghighlight_line(aes(game_number, xg_pm_cum, group = team), last(abs(xg_pm_cum)) > 2) +
+  geom_hline(yintercept = 0,
+             size = .25,
+             linetype = 2) +
+  scale_x_continuous(expand = c(0,0)) +
+  labs(x = "Game Number",
+       y = "Cumulative xG Differential",
+       caption = "@Null_HHockey, data from corsica.ca")
+
+ggsave("running_team_xg/images/team_xg_pm_cum.png")
+
+df %>% 
+  gghighlight_line(aes(game_number, xg_pm_cum, group = team), unique(team) == "PIT") +
   #scale_x_continuous(expand = c(0,0)) +
   labs(x = "Game Number",
        y = "Cumulative xG Differential")
