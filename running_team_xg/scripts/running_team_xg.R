@@ -25,7 +25,9 @@ df %>%
   scale_x_continuous(expand = c(0,0)) +
   labs(x = "Game Number",
        y = "Cumulative xG Differential",
-       caption = "@Null_HHockey, data from corsica.ca")
+       caption = "@Null_HHockey, data from corsica.ca",
+       title = "2017-2018 NHL",
+       subtitle = "Even Strength")
 
 ggsave("running_team_xg/images/team_xg_pm_cum.png")
 
