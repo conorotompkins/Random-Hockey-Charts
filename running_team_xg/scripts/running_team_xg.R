@@ -4,7 +4,7 @@ library(gghighlight)
 
 theme_set(theme_bw())
 
-data <- read_csv("running_team_xg/data/team_stats_2017-10-16.csv")
+data <- read_csv("running_team_xg/data/team_stats_2017-10-17.csv")
 
 df <- data %>%
   mutate(team = Team,
