@@ -36,3 +36,8 @@ df %>%
   #scale_x_continuous(expand = c(0,0)) +
   labs(x = "Game Number",
        y = "Cumulative xG Differential")
+
+df %>% 
+  filter(team == "PIT") %>% 
+  ggplot(aes(game_number, xg_pm, group = team)) +
+  geom_point()
