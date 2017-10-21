@@ -38,9 +38,24 @@ df %>%
        subtitle = "Even Strength")
 
 df %>% 
-  gghighlight_line(aes(game_number, xg_pm_cum, group = team), unique(team) == "S.J") +
+  gghighlight_line(aes(game_number, xg_pm_cum, group = team), unique(team) == "MTL") +
   #scale_x_continuous(expand = c(0,0)) +
   facet_wrap(~season,
              ncol = 1) +
   labs(x = "Game Number",
        y = "Cumulative xG Differential")
+
+df %>% 
+  ungroup() %>% 
+  filter(team %in% c("PIT", "WAS", "CBJ", "CAR", "NYR", "NYI")) %>% 
+  ggplot(aes(game_number, xg_pm_cum, color = season)) +
+  geom_hline(yintercept = 0, 
+             linetype = 2) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~team) +
+  labs(x = "Game Number",
+       y = "Cumulative xG Differential",
+       caption = "@Null_HHockey, data from corsica.ca",
+       title = "NHL",
+       subtitle = "Even Strength")
