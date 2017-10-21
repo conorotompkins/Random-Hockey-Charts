@@ -4,18 +4,22 @@ library(gghighlight)
 
 theme_set(theme_bw())
 
-season_1617 <- read_csv("running_team_xg/data/2016_2017.csv")
+rm(list = ls())
 
-season_1617
+files <- list.files(path = "running_team_xg/data", pattern = "season")
+data <- lapply(paste0("running_team_xg/data/", files), read_csv)
+names(data) <- list("2014_2015", "2015_2016", "2016_2017")
+names(data)
+df <- bind_rows(data, .id = "season")
 
-df <- season_1617 %>% 
+df <- df %>% 
   mutate(team = Team,
          date = ymd(Date),
          xg_pm = `xG+/-`,
          situation = "ES") %>% 
-  select(situation, team, date, xg_pm) %>% 
+  select(season, situation, team, date, xg_pm) %>% 
   arrange(team, date) %>% 
-  group_by(team) %>% 
+  group_by(season, team) %>% 
   mutate(game_number = dense_rank(date),
          xg_pm_cum = cumsum(xg_pm))
 
@@ -25,14 +29,18 @@ df %>%
              size = .25,
              linetype = 2) +
   scale_x_continuous(expand = c(0.01,0)) +
+  facet_wrap(~season,
+             ncol = 1) +
   labs(x = "Game Number",
        y = "Cumulative xG Differential",
        caption = "@Null_HHockey, data from corsica.ca",
-       title = "2016-2017 NHL",
+       title = "NHL",
        subtitle = "Even Strength")
 
 df %>% 
-  gghighlight_line(aes(game_number, xg_pm_cum, group = team), unique(team) == "PIT") +
+  gghighlight_line(aes(game_number, xg_pm_cum, group = team), unique(team) == "EDM") +
   #scale_x_continuous(expand = c(0,0)) +
+  facet_wrap(~season,
+             ncol = 1) +
   labs(x = "Game Number",
        y = "Cumulative xG Differential")
