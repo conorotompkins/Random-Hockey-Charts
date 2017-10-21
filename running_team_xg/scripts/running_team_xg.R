@@ -4,7 +4,11 @@ library(gghighlight)
 
 theme_set(theme_bw())
 
+<<<<<<< HEAD
 data <- read_csv("running_team_xg/data/team_stats_2017-10-21.csv")
+=======
+data <- read_csv("running_team_xg/data/team_stats_2017-10-17.csv")
+>>>>>>> 340dc295e6a5ee7715ebe98af5aa215942f83592
 
 df <- data %>%
   mutate(team = Team,
@@ -36,3 +40,8 @@ df %>%
   #scale_x_continuous(expand = c(0,0)) +
   labs(x = "Game Number",
        y = "Cumulative xG Differential")
+
+df %>% 
+  filter(team == "PIT") %>% 
+  ggplot(aes(game_number, xg_pm, group = team)) +
+  geom_point()

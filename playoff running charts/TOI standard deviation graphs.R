@@ -145,8 +145,8 @@ ggsave("line_plot_position_standard_deviation.png")
 teams_boxplot_F <- df_raw %>%
   filter(position == "Forward") %>% 
   group_by(team) %>% 
-  summarize(team_toi_sd = sd(toi)) %>% 
-  arrange(team_toi_sd) %>% 
+  summarize(team_toi_median = median(toi)) %>% 
+  arrange(team_toi_median) %>% 
   select(team) %>% 
   unique() %>% 
   unlist()
@@ -154,8 +154,8 @@ teams_boxplot_F <- df_raw %>%
 teams_boxplot_D <- df_raw %>%
   filter(position == "Defense") %>% 
   group_by(team) %>% 
-  summarize(team_toi_sd = sd(toi)) %>% 
-  arrange(team_toi_sd) %>% 
+  summarize(team_toi_median = median(toi)) %>% 
+  arrange(team_toi_median) %>% 
   select(team) %>% 
   unique() %>% 
   unlist()
