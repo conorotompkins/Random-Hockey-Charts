@@ -8,7 +8,7 @@ rm(list = ls())
 
 files <- list.files(path = "running_team_xg/data", pattern = "season")
 data <- lapply(paste0("running_team_xg/data/", files), read_csv)
-names(data) <- list("2014_2015", "2015_2016", "2016_2017")
+names(data) <- list("2014_2015", "2015_2016", "2016_2017", "2017_2018")
 names(data)
 df <- bind_rows(data, .id = "season")
 
@@ -38,7 +38,7 @@ df %>%
        subtitle = "Even Strength")
 
 df %>% 
-  gghighlight_line(aes(game_number, xg_pm_cum, group = team), unique(team) == "EDM") +
+  gghighlight_line(aes(game_number, xg_pm_cum, group = team), unique(team) == "S.J") +
   #scale_x_continuous(expand = c(0,0)) +
   facet_wrap(~season,
              ncol = 1) +
