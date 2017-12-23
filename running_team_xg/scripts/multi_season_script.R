@@ -16,7 +16,7 @@ df <- df %>%
   mutate(team = Team,
          date = ymd(Date),
          xg_pm = `xG+/-`,
-         situation = "ES") %>% 
+         situation = "All Situations") %>% 
   select(season, situation, team, date, xg_pm) %>% 
   arrange(team, date) %>% 
   group_by(season, team) %>% 
@@ -26,9 +26,8 @@ df <- df %>%
   mutate(is_current_season = (season == "2017_2018"))
 
 df %>% 
-  #ungroup() %>% 
   filter(season == "2017_2018") %>% 
-  gghighlight_line(aes(game_number, xg_pm_cum, group = team), last(abs(xg_pm_cum)) > 4) +
+  gghighlight_line(aes(game_number, xg_pm_cum, group = team), last(abs(xg_pm_cum)) > 8) +
   geom_hline(yintercept = 0,
              size = .25,
              linetype = 2) +
@@ -40,12 +39,13 @@ df %>%
        y = "Cumulative xG Differential",
        caption = "@Null_HHockey, data from corsica.ca",
        title = "NHL",
-       subtitle = "Even Strength") +
+       subtitle = "All Situations") +
   theme(panel.grid.minor = element_blank())
+ggsave("running_team_xg/images/2017_2018_xg_pm_cum.png", width = 12, height = 6)
 
 df %>% 
   filter(season == "2017_2018") %>% 
-  gghighlight_line(aes(game_number, xg_pm_cum, group = team), unique(team) == "VGK") +
+  gghighlight_line(aes(game_number, xg_pm_cum, group = team), unique(team) == "S.J") +
   geom_hline(yintercept = 0,
              size = .25,
              linetype = 2) +
@@ -54,7 +54,29 @@ df %>%
   facet_wrap(~season,
              ncol = 1) +
   labs(x = "Game Number",
-       y = "Cumulative xG Differential")
+       y = "Cumulative xG Differential",
+       caption = "@Null_HHockey, data from corsica.ca",
+       title = "NHL",
+       subtitle = "All Situations") +
+  theme(panel.grid.minor = element_blank())
+
+###metro division
+df %>% 
+  filter(season == "2017_2018") %>% 
+  gghighlight_line(aes(game_number, xg_pm_cum, group = team), unique(team) %in% c("PIT", "WSH", "CBJ", "CAR", "NYR", "NYI", "N.J", "PHI")) +
+  geom_hline(yintercept = 0,
+             size = .25,
+             linetype = 2) +
+  scale_x_continuous(expand = c(0.01,0),
+                     breaks = 1:max(df$game_number)) +
+  facet_wrap(~season,
+             ncol = 1) +
+  labs(x = "Game Number",
+       y = "Cumulative xG Differential",
+       caption = "@Null_HHockey, data from corsica.ca",
+       title = "NHL",
+       subtitle = "All Situations") +
+  theme(panel.grid.minor = element_blank())
 
 df %>% 
   filter(team %in% c("PIT", "WSH", "CBJ", "CAR", "NYR", "NYI", "N.J", "PHI")) %>% 
@@ -65,8 +87,10 @@ df %>%
   #geom_point() +
   facet_wrap(~team) +
   scale_alpha_discrete(range = c(.25, 1)) +
+  guides(alpha=FALSE) +
   labs(x = "Game Number",
        y = "Cumulative xG Differential",
        caption = "@Null_HHockey, data from corsica.ca",
        title = "NHL",
-       subtitle = "Even Strength")
+       subtitle = "All Situations")
+
