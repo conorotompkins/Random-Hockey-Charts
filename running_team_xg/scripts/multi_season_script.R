@@ -16,8 +16,10 @@ df <- df %>%
   mutate(team = Team,
          date = ymd(Date),
          xg_pm = `xG+/-`,
+         xgf60 = `xGF/60`,
+         xga60 = `xGA/60`,
          situation = "All Situations") %>% 
-  select(season, situation, team, date, xg_pm) %>% 
+  select(season, situation, team, date, xg_pm, xgf60, xga60) %>% 
   arrange(team, date) %>% 
   group_by(season, team) %>% 
   mutate(game_number = dense_rank(date),
@@ -27,7 +29,7 @@ df <- df %>%
 
 df %>% 
   filter(season == "2017_2018") %>% 
-  gghighlight_line(aes(game_number, xg_pm_cum, group = team), last(abs(xg_pm_cum)) > 8) +
+  gghighlight_line(aes(game_number, xg_pm_cum, color = team), last(abs(xg_pm_cum)) > 8) +
   geom_hline(yintercept = 0,
              size = .25,
              linetype = 2) +
@@ -45,7 +47,7 @@ ggsave("running_team_xg/images/2017_2018_xg_pm_cum.png", width = 12, height = 6)
 
 df %>% 
   filter(season == "2017_2018") %>% 
-  gghighlight_line(aes(game_number, xg_pm_cum, group = team), unique(team) == "S.J") +
+  gghighlight_line(aes(game_number, xg_pm_cum, color = team), unique(team) == "S.J") +
   geom_hline(yintercept = 0,
              size = .25,
              linetype = 2) +
@@ -63,7 +65,7 @@ df %>%
 ###metro division
 df %>% 
   filter(season == "2017_2018") %>% 
-  gghighlight_line(aes(game_number, xg_pm_cum, group = team), unique(team) %in% c("PIT", "WSH", "CBJ", "CAR", "NYR", "NYI", "N.J", "PHI")) +
+  gghighlight_line(aes(game_number, xg_pm_cum, color = team), unique(team) %in% c("PIT", "WSH", "CBJ", "CAR", "NYR", "NYI", "N.J", "PHI")) +
   geom_hline(yintercept = 0,
              size = .25,
              linetype = 2) +
