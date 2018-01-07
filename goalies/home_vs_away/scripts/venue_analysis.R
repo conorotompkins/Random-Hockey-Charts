@@ -27,7 +27,7 @@ gghighlight_point(data = df_venue, aes(home, away), label_key = key, predicate =
   geom_hline(yintercept = 0) +
   geom_vline(xintercept = 0) +
   geom_abline(intercept = 0, slope = 1) +
-  labs(title = "Save % - Expected Sv%",
+  labs(title = "Save % - Expected Sv%, 2007-08 to 2017-18",
        x = "Home",
        y = "Away",
        subtitle = "Minimum 800 shots faced, All Situations",
@@ -54,7 +54,8 @@ gghighlight_point(data = df_venue_1718, aes(home, away), label_key = player, pre
 df_venue_1718 %>% 
   #filter(str_detect(team, "PIT")) %>% 
   ggplot(aes(home, away, label = player)) +
-  geom_label_repel() +
+  geom_point() +
+  geom_label_repel(size = 2) +
   geom_hline(yintercept = 0) +
   geom_vline(xintercept = 0) +
   #geom_abline(intercept = 0, slope = 1) +
@@ -63,7 +64,6 @@ df_venue_1718 %>%
        y = "Away",
        subtitle = "Minimum 100 shots faced, All Situations 2017-2018",
        caption = "@Null_HHockey, data from corsica.hockey") +
-  annotate("text", x = c(-5, -5, 4, 4), y  = c(-5.5, 5, 5, -5.5), label = c("Nah", "Road Warrior", "Placeholder", "Home cookin'"))
-
-?gghighlight_point
-?annotate
+  annotate("text", x = c(-5, -5, 3.8, 4), y  = c(-5.5, 5, 5, -5.5), label = c("Nah", "Road Warrior", "Geography-agnostic", "Home cookin'"), 
+           size = 4)
+ggsave("goalies/home_vs_away/images/goalie_venue_201718.png")
