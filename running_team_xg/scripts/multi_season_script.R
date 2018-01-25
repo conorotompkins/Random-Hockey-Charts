@@ -10,6 +10,7 @@ files <- list.files(path = "running_team_xg/data", pattern = "season")
 data <- lapply(paste0("running_team_xg/data/", files), read_csv)
 names(data) <- list("2014_2015", "2015_2016", "2016_2017", "2017_2018")
 names(data)
+data[[4]]
 df <- bind_rows(data, .id = "season")
 
 df <- df %>% 
@@ -29,12 +30,11 @@ df <- df %>%
 
 df %>% 
   filter(season == "2017_2018") %>% 
-  gghighlight_line(aes(game_number, xg_pm_cum, color = team), last(abs(xg_pm_cum)) > 15) +
+  gghighlight_line(aes(game_number, xg_pm_cum, color = team), last(xg_pm_cum) > 12) +
   geom_hline(yintercept = 0,
              size = .25,
              linetype = 2) +
-  scale_x_continuous(expand = c(0.01,0),
-                     breaks = 1:max(df$game_number)) +
+  scale_x_continuous(expand = c(0.01,0)) +
   facet_wrap(~season,
              ncol = 1) +
   labs(x = "Game Number",
@@ -42,8 +42,28 @@ df %>%
        caption = "@Null_HHockey, data from corsica.ca",
        title = "NHL",
        subtitle = "All Situations") +
-  theme(panel.grid.minor = element_blank())
-ggsave("running_team_xg/images/2017_2018_xg_pm_cum.png", width = 12, height = 6)
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_blank())
+ggsave("running_team_xg/images/2017_2018_xg_pm_cumulative_top.png", width = 12, height = 6)
+
+df %>% 
+  filter(season == "2017_2018") %>% 
+  gghighlight_line(aes(game_number, xg_pm_cum, color = team), last(xg_pm_cum) < -12) +
+  geom_hline(yintercept = 0,
+             size = .25,
+             linetype = 2) +
+  scale_x_continuous(expand = c(0.01,0)) +
+  facet_wrap(~season,
+             ncol = 1) +
+  labs(x = "Game Number",
+       y = "Cumulative xG Differential",
+       caption = "@Null_HHockey, data from corsica.ca",
+       title = "NHL",
+       subtitle = "All Situations") +
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_blank())
+ggsave("running_team_xg/images/2017_2018_xg_pm_cumulative_bottom.png", width = 12, height = 6)
+
 
 df %>% 
   filter(season == "2017_2018") %>% 
@@ -51,8 +71,7 @@ df %>%
   geom_hline(yintercept = 0,
              size = .25,
              linetype = 2) +
-  scale_x_continuous(expand = c(0.01,0),
-                     breaks = 1:max(df$game_number)) +
+  scale_x_continuous(expand = c(0.01,0)) +
   facet_wrap(~season,
              ncol = 1) +
   labs(x = "Game Number",
@@ -60,7 +79,8 @@ df %>%
        caption = "@Null_HHockey, data from corsica.ca",
        title = "NHL",
        subtitle = "All Situations") +
-  theme(panel.grid.minor = element_blank())
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_blank())
 ggsave("running_team_xg/images/2017_2018_PIT_xg_pm_cum.png", width = 12, height = 6)
 
 ###metro division
@@ -70,8 +90,7 @@ df %>%
   geom_hline(yintercept = 0,
              size = .25,
              linetype = 2) +
-  scale_x_continuous(expand = c(0.01,0),
-                     breaks = 1:max(df$game_number)) +
+  scale_x_continuous(expand = c(0.01,0)) +
   facet_wrap(~season,
              ncol = 1) +
   labs(x = "Game Number",
@@ -79,7 +98,8 @@ df %>%
        caption = "@Null_HHockey, data from corsica.ca",
        title = "NHL",
        subtitle = "All Situations") +
-  theme(panel.grid.minor = element_blank())
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_blank())
 
 df %>% 
   filter(team %in% c("PIT", "WSH", "CBJ", "CAR", "NYR", "NYI", "N.J", "PHI")) %>% 
@@ -96,4 +116,4 @@ df %>%
        caption = "@Null_HHockey, data from corsica.ca",
        title = "NHL",
        subtitle = "All Situations")
-
+ggsave("running_team_xg/images/2017_2018_metro_div_season_comparison.png", width = 12, height = 6)
